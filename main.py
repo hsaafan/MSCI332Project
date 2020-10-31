@@ -13,7 +13,7 @@ def main():
         m.setParam("NonConvex", 2)
 
         # Add variables
-        products = data_import.import_products()
+        products, interactions_matrix = data_import.import_products()
         machines = data_import.import_machines()
 
         var_dict = {}
@@ -100,6 +100,16 @@ def main():
 
             return(profit)
 
+        def get_demand(item):
+            expected = item['demand']
+            interactions = 0
+            xi = var_dict['x' + item['id']]
+            i = int(item['id']) - 1
+            for j, item2 in enumerate(products):
+                xj = var_dict['x' + item2['id']]
+                interactions += xi * xj * interactions_matrix[i, j]
+            return(expected + interactions)
+
         """ Objectives """
         # Machine capital cost
         machine_cost = get_machine_cost() / alpha
@@ -118,7 +128,7 @@ def main():
         """ Constraints """
         # Demand
         for item in products:
-            m.addConstr(var_dict['x'+item['id']] - item['demand'] -
+            m.addConstr(var_dict['x'+item['id']] - get_demand(item) -
                         (var_dict['y+'+item['id']]-var_dict['y-'+item['id']])
                         == 0)
         # Volume
@@ -143,9 +153,16 @@ def main():
         m.optimize()
 
         # Print results
+        print("-----Variable Indices-----")
+        print("Index | Name")
+        print("====================================")
+        for item in products:
+            print(f" {int(item['id']):02}   | {item['name']}")
         print("--------Run Results--------")
+        print("VarName | Value")
+        print("===============")
         for v in m.getVars():
-            print(f'{v.varName:10} {v.x}')
+            print(f'{v.varName:7} | {v.x}')
         print(f'Obj: {m.objVal}')
 
     except gp.GurobiError as e:
