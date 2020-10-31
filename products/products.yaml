@@ -1,105 +1,136 @@
 # Fields
-# name   -> Product name
-# type   -> Set to 'product'
-# volume -> Number of slots taken
-# profit -> Profit made on item
-# demand -> Demand for item
+# name   -> Product name (str)
+# type   -> Set to 'product' (str)
+# volume -> Number of slots taken (int)
+# marginal_costs -> Profit made on item at each breakpoint (list of float)
+# breakpoints ->    The upper limits of the marginal costs
+# demand -> Expected demand for item (float)
+# penalty -> Short supply penalty (float)
+#   Note that there is also a penalty associated with loss of profit due to short supply
 
 x01: {
   name: Gloves (Small),
   type: product,
   volume: 1,
-  profit: 8.75,
+  marginal_costs: [8.75],
+  breakpoints: [],
   demand: 4,
+  penalty: 0
 }
 x02: {
   name: Gloves (Medium),
   type: product,
   volume: 1,
-  profit: 8.75,
+  marginal_costs: [8.75],
+  breakpoints: [],
   demand: 6,
+  penalty: 0
 }
 x03: {
   name: Gloves (Large),
   type: product,
   volume: 1,
-  profit: 8.75,
+  marginal_costs: [8.75],
+  breakpoints: [],
   demand: 5,
+  penalty: 0
 }
 x04: {
   name: Fabric Mask (Adult),
   type: product,
   volume: 1,
-  profit: 40,
+  marginal_costs: [40],
+  breakpoints: [],
   demand: 3,
+  penalty: 0
 }
 x05: {
   name: Fabric Mask (Kids),
   type: product,
   volume: 1,
-  profit: 20,
+  marginal_costs: [20],
+  breakpoints: [],
   demand: 0.5,
+  penalty: 0
 }
 x06: {
   name: Disposable Mask,
   type: product,
   volume: 1,
-  profit: 2,
+  marginal_costs: [2],
+  breakpoints: [],
   demand: 20,
+  penalty: 50
 }
 x07: {
   name: Hand Sanitizer (Scented),
   type: product,
   volume: 1,
-  profit: 10,
+  marginal_costs: [10],
+  breakpoints: [],
   demand: 1,
+  penalty: 0
 }
 x08: {
   name: Hand Sanitizer (Unscented),
   type: product,
   volume: 1,
-  profit: 10,
+  marginal_costs: [10],
+  breakpoints: [],
   demand: 1,
+  penalty: 0
 }
 x09: {
   name: Face Shield,
   type: product,
   volume: 2,
-  profit: 30,
+  marginal_costs: [30],
+  breakpoints: [],
   demand: 1,
+  penalty: 0
 }
 x10: {
   name: Ear Saver,
   type: product,
   volume: 1,
-  profit: 5,
+  marginal_costs: [5],
+  breakpoints: [],
   demand: 1,
+  penalty: 0
 }
 x11: {
   name: Lysol Wipes,
   type: product,
   volume: 1,
-  profit: 10,
+  marginal_costs: [10],
+  breakpoints: [],
   demand: 10,
+  penalty: 0
 }
 x12: {
   name: Rubbing Alcohol (250 mL),
   type: product,
   volume: 1,
-  profit: 7,
+  marginal_costs: [7],
+  breakpoints: [],
   demand: 0.5,
+  penalty: 0
 }
 x13: {
   name: Door Opener Keychain,
   type: product,
   volume: 1,
-  profit: 15,
+  marginal_costs: [15],
+  breakpoints: [],
   demand: 0.5,
+  penalty: 0
 }
 x14: {
   name: Anti-Fog Wipes,
   type: product,
   volume: 1,
-  profit: 8,
+  marginal_costs: [8],
+  breakpoints: [],
   demand: 20,
+  penalty: 0
 }
