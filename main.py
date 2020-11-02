@@ -58,7 +58,7 @@ def main():
         for item in products:
             # Add bounds to breakpoints
             item['breakpoints'].insert(0, 0)
-            item['breakpoints'].append(1e6)
+            item['breakpoints'].append(1e3)
             # Check that the number of breakpoints and marginal costs match
             K = len(item['breakpoints'])
             if K != len(item['marginal_costs']) + 1:
@@ -182,15 +182,16 @@ def main():
             x = DECISION_VARS['x']['name'] + item['id']
             y_p = DECISION_VARS['y_p']['name'] + item['id']
             y_m = DECISION_VARS['y_m']['name'] + item['id']
-            m.addConstr(var_dict[x] - get_demand(item)
-                        - (var_dict[y_p]-var_dict[y_m]) == 0)
+            m.addQConstr(var_dict[x] - get_demand(item) + var_dict[y_m] == 0,
+                         f"demand - {item['name']}")
         # Volume
         m.addConstr(get_volumes() - get_max_volume() <= 0, 'volume')
         # One Machine
         m.addConstr(get_machines() == 1, 'single kiosk')
         # SOS2 Equations
         for item in products:
-            for dv in [DECISION_VARS['zx'], DECISION_VARS['zd']]:
+            for var in ['zx', 'zd']:
+                dv = DECISION_VARS[var]
                 sum_sos2 = 0
                 var_eqn = 0
                 for val in range(len(item['breakpoints'])):
@@ -200,15 +201,15 @@ def main():
                 # Convexity equation
                 m.addConstr(sum_sos2 == 1, f"Convexity - {item['name']}")
                 # Function equations
-                if dv == DECISION_VARS['zx']:
+                if var == 'zx':
                     xi = DECISION_VARS['x']['name'] + item['id']
                     m.addConstr(var_eqn - var_dict[xi] == 0,
                                 f"Variable Eqution Stock - {item['name']}")
-                elif dv == DECISION_VARS['zd']:
-                    m.addConstr(var_eqn - get_demand(item) == 0,
-                                f"Variable Eqution Demand - {item['name']}")
+                elif var == 'zd':
+                    m.addQConstr(var_eqn - get_demand(item) == 0,
+                                 f"Variable Eqution Demand - {item['name']}")
         # Optimize
-
+        m.update()
         m.optimize()
 
         # Print results
@@ -221,7 +222,7 @@ def main():
         print("VarName | Value")
         print("===============")
         for v in m.getVars():
-            print(f'{v.varName:7} | {v.x}')
+            print(f'{v.varName:7} | {v.x:2.3f}')
         print(f'Obj: {m.objVal}')
 
     except gp.GurobiError as e:
