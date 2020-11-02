@@ -123,7 +123,7 @@ def main():
             # Get the generic penalty costs associated with shorting each item
             penalty = 0
             for item in products:
-                name = DECISION_VARS['y_p']['name'] + item['id']
+                name = DECISION_VARS['y_m']['name'] + item['id']
                 penalty += var_dict[name] * item['penalty']
             return(penalty)
 
