@@ -1,6 +1,8 @@
 import yaml
 import os
 
+import numpy as np
+
 
 def import_from_yaml(path: str, item_type: str):
     item_list = []
@@ -20,7 +22,15 @@ def import_from_yaml(path: str, item_type: str):
 
 def import_products(path='products'):
     product_list = import_from_yaml(path, 'product')
-    return(product_list)
+    n = len(product_list)
+    interactions = np.zeros((n, n))
+    for i, item in enumerate(product_list):
+        for inter in item['interactions']:
+            j = [key for key, val in enumerate(product_list)
+                 if val.get('name') == inter['name']]
+            interactions[i, j] = inter['val']
+            interactions[j, i] = inter['val']
+    return(product_list, interactions)
 
 
 def import_machines(path='machines'):
