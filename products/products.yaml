@@ -21,11 +21,11 @@ x01: {
   interactions: [
     {
       name: Gloves (Medium),
-      val: -1
+      val: -0.1
     },
     {
       name: Gloves (Large),
-      val: -1
+      val: -0.1
     }
   ],
   penalty: 0
@@ -40,7 +40,7 @@ x02: {
   interactions: [
     {
       name: Gloves (Large),
-      val: -1
+      val: -0.1
     }
   ],
   penalty: 0
@@ -60,7 +60,15 @@ x04: {
   type: product,
   volume: 1,
   marginal_costs: [40],
-  breakpoints: [],
+  breakpoints: [
+   {
+      name: Fabric Mask (Kids),
+      val: -0.05
+    },
+    {
+      name: Disposable Mask,
+      val: -0.1
+    }],
   demand: 3,
   interactions: [],
   penalty: 0
@@ -72,7 +80,11 @@ x05: {
   marginal_costs: [20],
   breakpoints: [],
   demand: 0.5,
-  interactions: [],
+  interactions: [
+   {
+      name: Disposable Mask,
+      val: -0.1
+    }],
   penalty: 0
 }
 x06: {
@@ -82,7 +94,11 @@ x06: {
   marginal_costs: [2],
   breakpoints: [],
   demand: 20,
-  interactions: [],
+  interactions: [
+  {
+      name: Ear Saver,
+      val: 0.2
+    }],
   penalty: 50
 }
 x07: {
@@ -92,7 +108,11 @@ x07: {
   marginal_costs: [10],
   breakpoints: [],
   demand: 1,
-  interactions: [],
+  interactions: [
+  {
+      name: Hand Sanitizer (Unscented),
+      val: -0.1
+    }],
   penalty: 0
 }
 x08: {
