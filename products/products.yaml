@@ -60,17 +60,18 @@ x04: {
   type: product,
   volume: 1,
   marginal_costs: [40],
-  breakpoints: [
-   {
+  breakpoints: [],
+  demand: 3,
+  interactions: [
+    {
       name: Fabric Mask (Kids),
       val: -0.05
     },
     {
       name: Disposable Mask,
       val: -0.1
-    }],
-  demand: 3,
-  interactions: [],
+    }
+    ],
   penalty: 0
 }
 x05: {
