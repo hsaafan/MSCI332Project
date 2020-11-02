@@ -4,6 +4,44 @@ from gurobipy import GRB
 import data_import
 
 alpha = 10
+# Decision variable definitions for products
+DECISION_VARS = {
+    'x':                        # Key in code, do not change
+    {
+        'name': 'x',            # Name in console output
+        'sos2': False,          # Is this is a set of SOS2 variables?
+        'sos_group': None,      # Which piecewise function is the sos2 set for?
+        'vtype': GRB.INTEGER    # Gurobi variable type
+    },
+    'y_p':
+    {
+        'name': 'y+',
+        'sos2': False,
+        'sos_group': None,
+        'vtype': GRB.CONTINUOUS
+    },
+    'y_m':
+    {
+        'name': 'y-',
+        'sos2': False,
+        'sos_group': None,
+        'vtype': GRB.CONTINUOUS
+    },
+    'zx':
+    {
+        'name': 'zx',
+        'sos2': True,
+        'sos_group': 'product - volume discount',
+        'vtype': GRB.CONTINUOUS
+    },
+    'zd':
+    {
+        'name': 'zd',
+        'sos2': True,
+        'sos_group': 'product - volume discount',
+        'vtype': GRB.CONTINUOUS
+    },
+}
 
 
 def main():
@@ -12,142 +50,163 @@ def main():
         m = gp.Model("mip1")
         m.setParam("NonConvex", 2)
 
-        # Add variables
+        # Import model parameters
         products, interactions_matrix = data_import.import_products()
         machines = data_import.import_machines()
-
         var_dict = {}
+
         for item in products:
-            # Decision variable
-            var_dict['x' + item['id']] = m.addVar(vtype=GRB.INTEGER)
-            var_dict['x' + item['id']].varName = 'x' + item['id']
-            # Surplus variable for demand
-            var_dict['y+' + item['id']] = m.addVar(vtype=GRB.CONTINUOUS)
-            var_dict['y+' + item['id']].varName = 'y+' + item['id']
-            # Slack variable for demand
-            var_dict['y-' + item['id']] = m.addVar(vtype=GRB.CONTINUOUS)
-            var_dict['y-' + item['id']].varName = 'y-' + item['id']
             # Add bounds to breakpoints
             item['breakpoints'].insert(0, 0)
             item['breakpoints'].append(1e6)
+            # Check that the number of breakpoints and marginal costs match
             K = len(item['breakpoints'])
             if K != len(item['marginal_costs']) + 1:
                 raise KeyError(f"Length of breakppoints and marginal costs "
                                f"do not match for {item['name']}")
-            # SOS2 variable
-            sos_vars = []
-            for val in range(K):
-                s_id = 'z' + item['id'] + f"{val:02}"
-                var_dict[s_id] = m.addVar(vtype=GRB.CONTINUOUS)
-                var_dict[s_id].varName = s_id
-                sos_vars.append(var_dict[s_id])
-            m.addSOS(GRB.SOS_TYPE2, sos_vars)
+            # Add all product decision variables to dictionary
+            for key, dv in DECISION_VARS.items():
+                if dv['sos2'] and 'product' in dv['sos_group']:
+                    # Add SOS2 variables for products
+                    sos_group = []
+                    for val in range(K):
+                        name = dv['name'] + item['id'] + f"{val:02}"
+                        var_dict[name] = m.addVar(vtype=dv['vtype'])
+                        var_dict[name].varName = name
+                        sos_group.append(var_dict[name])
+                    m.addSOS(GRB.SOS_TYPE2, sos_group)
+                else:
+                    # Add all other variables
+                    name = dv['name'] + item['id']
+                    var_dict[name] = m.addVar(vtype=dv['vtype'])
+                    var_dict[name].varName = name
+        # Decision variables for kiosks
         for item in machines:
-            var_dict['k' + item['id']] = m.addVar(vtype=GRB.BINARY)
-            var_dict['k' + item['id']].varName = 'k' + item['id']
+            name = 'k' + item['id']
+            var_dict[name] = m.addVar(vtype=GRB.BINARY)
+            var_dict[name].varName = name
 
+        """ Model Helper functions """
         def get_volumes():
+            # Get total volume taken up by products
             vol = 0
             for item in products:
-                vol += var_dict['x' + item['id']] * item['volume']
+                name = DECISION_VARS['x']['name'] + item['id']
+                vol += var_dict[name] * item['volume']
             return(vol)
 
         def get_max_volume():
+            # Get the total volume of the kiosks
             vol = 0
             for item in machines:
-                vol += var_dict['k' + item['id']] * item['volume']
+                name = 'k' + item['id']
+                vol += var_dict[name] * item['volume']
             return(vol)
 
         def get_machines():
+            # Get the number of kiosks used
             total = 0
             for item in machines:
-                total += var_dict['k' + item['id']]
+                name = 'k' + item['id']
+                total += var_dict[name]
             return(total)
 
         def get_machine_cost():
+            # Get the total cost of the machines
             cost = 0
             for item in machines:
-                cost += var_dict['k' + item['id']] * item['cost']
+                name = name = 'k' + item['id']
+                cost += var_dict[name] * item['cost']
             return(cost)
 
         def get_generic_penalties():
+            # Get the generic penalty costs associated with shorting each item
             penalty = 0
             for item in products:
-                penalty += var_dict['y-' + item['id']] * item['penalty']
+                name = DECISION_VARS['y_p']['name'] + item['id']
+                penalty += var_dict[name] * item['penalty']
             return(penalty)
 
-        def get_profit(item):
-            breakpoints = item['breakpoints']
-            costs = item['marginal_costs']
-            profit = 0
+        def get_profit(sos2_var):
+            # Get the expected weekly profit
+            total_profit = 0
+            for item in products:
+                breakpoints = item['breakpoints']
+                costs = item['marginal_costs']
+                profit = 0
 
-            def recursive_profit(x, ind):
-                if x <= breakpoints[ind + 1]:
-                    return(costs[ind] * (x - breakpoints[ind]))
-                else:
-                    p = recursive_profit(x, ind + 1)
+                def recursive_profit(x, i):
+                    if x <= breakpoints[i + 1]:
+                        return(costs[i] * (x - breakpoints[i]))
+                    else:
+                        p = recursive_profit(x, i + 1)
 
-                if ind > 0:
-                    p += (costs[ind] * (breakpoints[ind+1] - breakpoints[ind]))
-                else:
-                    p += costs[ind] * breakpoints[ind + 1]
-                return(p)
+                    if i > 0:
+                        p += (costs[i] * (breakpoints[i + 1] - breakpoints[i]))
+                    else:
+                        p += costs[i] * breakpoints[i + 1]
+                    return(p)
 
-            for ind in range(len(breakpoints)):
-                s_id = 'z' + item['id'] + f"{ind:02}"
-                pf = recursive_profit(breakpoints[ind], 0)
-                profit += var_dict[s_id] * pf
-
-            return(profit)
+                for i in range(len(breakpoints)):
+                    name = sos2_var['name'] + item['id'] + f"{i:02}"
+                    pf = recursive_profit(breakpoints[i], 0)
+                    profit += var_dict[name] * pf
+                total_profit += profit
+            return(total_profit)
 
         def get_demand(item):
             expected = item['demand']
             interactions = 0
-            xi = var_dict['x' + item['id']]
+            name = DECISION_VARS['x']['name'] + item['id']
+            xi = var_dict[name]
             i = int(item['id']) - 1
             for j, item2 in enumerate(products):
                 xj = var_dict['x' + item2['id']]
                 interactions += xi * xj * interactions_matrix[i, j]
             return(expected + interactions)
 
-        """ Objectives """
+        """ Model Objectives """
         # Machine capital cost
         machine_cost = get_machine_cost() / alpha
         # Short supply penalties
         generic_penalties = get_generic_penalties()
         # Profit loss due to short supply penalty
-        # TODO: Update model in report
-        # Removed original profit loss because model would set all item
-        # stocks to 0 to get a potential profit of 0 which means that no
-        # profit is lost by not stocking an item
-        profit = 0
-        for item in products:
-            profit += get_profit(item)
-
-        m.setObjective(machine_cost + generic_penalties - profit)
-        """ Constraints """
+        profit_sold = get_profit(DECISION_VARS['zx'])
+        profit_demand = get_profit(DECISION_VARS['zd'])
+        stock_short_penalty = profit_demand - profit_sold
+        # Final objective function
+        m.setObjective(machine_cost + generic_penalties + stock_short_penalty)
+        """ Model Constraints """
         # Demand
         for item in products:
-            m.addConstr(var_dict['x'+item['id']] - get_demand(item) -
-                        (var_dict['y+'+item['id']]-var_dict['y-'+item['id']])
-                        == 0)
+            x = DECISION_VARS['x']['name'] + item['id']
+            y_p = DECISION_VARS['y_p']['name'] + item['id']
+            y_m = DECISION_VARS['y_m']['name'] + item['id']
+            m.addConstr(var_dict[x] - get_demand(item)
+                        - (var_dict[y_p]-var_dict[y_m]) == 0)
         # Volume
         m.addConstr(get_volumes() - get_max_volume() <= 0, 'volume')
         # One Machine
         m.addConstr(get_machines() == 1, 'single kiosk')
         # SOS2 Equations
         for item in products:
-            sum_sos2 = 0
-            var_eqn = 0
-            for val in range(len(item['breakpoints'])):
-                s_id = 'z' + item['id'] + f"{val:02}"
-                sum_sos2 += var_dict[s_id]
-                var_eqn += var_dict[s_id] * item['breakpoints'][val]
-            # Convexity equation
-            m.addConstr(sum_sos2 == 1, f"Convexity - {item['name']}")
-            # Variable equation
-            m.addConstr(var_eqn - var_dict['x' + item['id']] == 0,
-                        f"Variable Eqution - {item['name']}")
+            for dv in [DECISION_VARS['zx'], DECISION_VARS['zd']]:
+                sum_sos2 = 0
+                var_eqn = 0
+                for val in range(len(item['breakpoints'])):
+                    name = dv['name'] + item['id'] + f"{val:02}"
+                    sum_sos2 += var_dict[name]
+                    var_eqn += var_dict[name] * item['breakpoints'][val]
+                # Convexity equation
+                m.addConstr(sum_sos2 == 1, f"Convexity - {item['name']}")
+                # Function equations
+                if dv == DECISION_VARS['zx']:
+                    xi = DECISION_VARS['x']['name'] + item['id']
+                    m.addConstr(var_eqn - var_dict[xi] == 0,
+                                f"Variable Eqution Stock - {item['name']}")
+                elif dv == DECISION_VARS['zd']:
+                    m.addConstr(var_eqn - get_demand(item) == 0,
+                                f"Variable Eqution Demand - {item['name']}")
         # Optimize
 
         m.optimize()
