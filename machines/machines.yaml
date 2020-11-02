@@ -1,0 +1,24 @@
+# Fields
+# name   -> Machine name
+# type   -> Set to 'machine'
+# volume -> Number of available slots
+# cost   -> Total cost of machine
+
+m01: {
+  name: AMS MicroVend Countertop,
+  type: machine,
+  volume: 24,
+  cost: 4399
+}
+m02: {
+  name: AMS Snack,
+  type: machine,
+  volume: 48,
+  cost: 5999
+}
+m03: {
+  name: Crane Merchant Media 6 Combo,
+  type: machine,
+  volume: 60,
+  cost: 10999
+}

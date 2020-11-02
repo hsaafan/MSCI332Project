@@ -1,0 +1,105 @@
+# Fields
+# name   -> Product name
+# type   -> Set to 'product'
+# volume -> Number of slots taken
+# profit -> Profit made on item
+# demand -> Demand for item
+
+x01: {
+  name: Gloves (Small),
+  type: product,
+  volume: 1,
+  profit: 8.75,
+  demand: 4,
+}
+x02: {
+  name: Gloves (Medium),
+  type: product,
+  volume: 1,
+  profit: 8.75,
+  demand: 6,
+}
+x03: {
+  name: Gloves (Large),
+  type: product,
+  volume: 1,
+  profit: 8.75,
+  demand: 5,
+}
+x04: {
+  name: Fabric Mask (Adult),
+  type: product,
+  volume: 1,
+  profit: 40,
+  demand: 3,
+}
+x05: {
+  name: Fabric Mask (Kids),
+  type: product,
+  volume: 1,
+  profit: 20,
+  demand: 0.5,
+}
+x06: {
+  name: Disposable Mask,
+  type: product,
+  volume: 1,
+  profit: 2,
+  demand: 20,
+}
+x07: {
+  name: Hand Sanitizer (Scented),
+  type: product,
+  volume: 1,
+  profit: 10,
+  demand: 1,
+}
+x08: {
+  name: Hand Sanitizer (Unscented),
+  type: product,
+  volume: 1,
+  profit: 10,
+  demand: 1,
+}
+x09: {
+  name: Face Shield,
+  type: product,
+  volume: 2,
+  profit: 30,
+  demand: 1,
+}
+x10: {
+  name: Ear Saver,
+  type: product,
+  volume: 1,
+  profit: 5,
+  demand: 1,
+}
+x11: {
+  name: Lysol Wipes,
+  type: product,
+  volume: 1,
+  profit: 10,
+  demand: 10,
+}
+x12: {
+  name: Rubbing Alcohol (250 mL),
+  type: product,
+  volume: 1,
+  profit: 7,
+  demand: 0.5,
+}
+x13: {
+  name: Door Opener Keychain,
+  type: product,
+  volume: 1,
+  profit: 15,
+  demand: 0.5,
+}
+x14: {
+  name: Anti-Fog Wipes,
+  type: product,
+  volume: 1,
+  profit: 8,
+  demand: 20,
+}
