@@ -1,0 +1,144 @@
+# Fields
+# name           -> Product name (str)
+# type           -> Set to 'product' (str)
+# volume         -> Number of slots taken (int)
+# marginal_costs -> Profit made on item at each breakpoint (list of float)
+# breakpoints    -> The upper limits of the marginal costs
+# demand         -> Expected demand for item (float)
+# penalty        -> Short supply penalty (float)
+# interactions   -> Interactions with other products (list of interact dicts)
+# interact       -> Contains information about product interactions
+#   name -> Name of other product interaction happens with
+#   val  -> Interaction value
+
+x01: {
+  name: Product1,
+  type: product,
+  volume: 1,
+  marginal_costs: [7],
+  breakpoints: [],
+  demand: 3,
+  interactions: [
+  {
+      name: Product2,
+      val: 1
+    },
+  {
+      name: Product3,
+      val: 0.5
+    },
+  {
+      name: Product4,
+      val: -0.5
+    },
+  {
+      name: Product5,
+      val: 1
+    }],
+  penalty: 50
+}
+x02: {
+  name: Product2,
+  type: product,
+  volume: 2,
+  marginal_costs: [9],
+  breakpoints: [],
+  demand: 8,
+  interactions: [{
+      name: Product3,
+      val: -0.5
+    },
+  {
+      name: Product4,
+      val: -0.5
+    }],
+  penalty: 0
+}
+x03: {
+  name: Product3, 
+  type: product,
+  volume: 1,
+  marginal_costs: [8],
+  breakpoints: [],
+  demand: 10,
+  interactions: [
+  {
+      name: Product4,
+      val: -0.5
+    }],
+  penalty: 0
+}
+x04: {
+  name: Product4,
+  type: product,
+  volume: 1,
+  marginal_costs: [3],
+  breakpoints: [],
+  demand: 15,
+  interactions: [],
+  penalty: 0
+}
+x05: {
+  name: Product5,
+  type: product,
+  volume: 1,
+  marginal_costs: [5],
+  breakpoints: [],
+  demand: 0.5,
+  interactions: [],
+  penalty: 0
+}
+x06: {
+  name: Product6,
+  type: product,
+  volume: 1,
+  marginal_costs: [3],
+  breakpoints: [],
+  demand: 0.1,
+  interactions: [],
+  penalty: 0
+}
+x07: {
+  name: Product7,
+  type: product,
+  volume: 1,
+  marginal_costs: [20],
+  breakpoints: [],
+  demand: 2,
+  interactions: [
+  {
+      name: Product10,
+      val: -0.5
+    }],
+  penalty: 0
+}
+x08: {
+  name: Product8,
+  type: product,
+  volume: 1,
+  marginal_costs: [10],
+  breakpoints: [],
+  demand: 20,
+  interactions: [],
+  penalty: 0
+}
+x09: {
+  name: Product9,
+  type: product,
+  volume: 2,
+  marginal_costs: [30],
+  breakpoints: [],
+  demand: 11,
+  interactions: [],
+  penalty: 0
+}
+x10: {
+  name: Product10,
+  type: product,
+  volume: 1,
+  marginal_costs: [5],
+  breakpoints: [],
+  demand: 0.8,
+  interactions: [],
+  penalty: 50
+}

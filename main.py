@@ -165,6 +165,30 @@ def main():
                 interactions += xi * xj * interactions_matrix[i, j]
             return(expected + interactions)
 
+        """ Helper functions for statistics """
+        def get_demand_evaluation(item):
+            expected = item['demand']
+            interactions = 0
+            name = DECISION_VARS['x']['name'] + item['id']
+            xi = var_dict[name].x
+            i = int(item['id']) - 1
+            for j, item2 in enumerate(products):
+                xj = var_dict['x' + item2['id']].x
+                interactions += xi * xj * interactions_matrix[i, j]
+            return(expected + interactions)
+
+        def get_demand_fraction(essential=False):
+            demand = 0
+            stocked = 0
+            for item in products:
+                if essential and item['penalty'] <= 0:
+                    # Skip items that have no additional penalty
+                    continue
+                name = DECISION_VARS['x']['name'] + item['id']
+                stocked += var_dict[name].x
+                demand += get_demand_evaluation(item)
+            return(stocked/demand)
+
         """ Model Objectives """
         # Machine capital cost
         machine_cost = get_machine_cost() / alpha
@@ -223,14 +247,19 @@ def main():
         print("===============")
         for v in m.getVars():
             print(f'{v.varName:7} | {v.x:2.3f}')
+            if 'k' in v.varName:
+                if v.x > 0:
+                    kiosk_picked = v.varName
         print(f'Obj: {m.objVal}')
 
     except gp.GurobiError as e:
         print(f"Error Code: {e.errno} : {e}")
     except AttributeError:
         print("Encountered an attribute error")
-    return
+    return({"demand met": get_demand_fraction(),
+            "essential_demand_met": get_demand_fraction(True),
+            "kiosk chosen": kiosk_picked[-1]})
 
 
 if __name__ == "__main__":
-    main()
+    print(main())

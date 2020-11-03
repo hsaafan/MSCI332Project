@@ -1,0 +1,176 @@
+# Fields
+# name           -> Product name (str)
+# type           -> Set to 'product' (str)
+# volume         -> Number of slots taken (int)
+# marginal_costs -> Profit made on item at each breakpoint (list of float)
+# breakpoints    -> The upper limits of the marginal costs
+# demand         -> Expected demand for item (float)
+# penalty        -> Short supply penalty (float)
+# interactions   -> Interactions with other products (list of interact dicts)
+# interact       -> Contains information about product interactions
+#   name -> Name of other product interaction happens with
+#   val  -> Interaction value
+
+x01: {
+  name: Gloves (Small),
+  type: product,
+  volume: 1,
+  marginal_costs: [1],
+  breakpoints: [],
+  demand: 4,
+  interactions: [
+  ],
+  penalty: 0
+}
+x02: {
+  name: Gloves (Medium),
+  type: product,
+  volume: 1,
+  marginal_costs: [5],
+  breakpoints: [],
+  demand: 3,
+  interactions: [
+  ],
+  penalty: 0
+}
+x03: {
+  name: Gloves (Large), 
+  type: product,
+  volume: 1,
+  marginal_costs: [2],
+  breakpoints: [],
+  demand: 16,
+  interactions: [
+  {
+  name: Lysol Wipes,
+  val: 0.02
+  }
+  ],
+  penalty: 0
+}
+x04: {
+  name: Fabric Mask (Adult),
+  type: product,
+  volume: 1,
+  marginal_costs: [2],
+  breakpoints: [],
+  demand: 2,
+  interactions: [
+  {
+  name: Gloves (Medium),
+  val: -0.8
+  }],
+  penalty: 0
+}
+x05: {
+  name: Fabric Mask (Kids),
+  type: product,
+  volume: 1,
+  marginal_costs: [20],
+  breakpoints: [],
+  demand: 0.5,
+  interactions: [
+   {
+    name: Disposable Mask,
+    val: -0.1
+    }],
+  penalty: 0
+}
+x06: {
+  name: Disposable Mask,
+  type: product,
+  volume: 1,
+  marginal_costs: [8],
+  breakpoints: [],
+  demand: 15,
+  interactions: [
+  {
+    name: Ear Saver,
+    val: 1
+    }],
+  penalty: 0
+}
+x07: {
+  name: Hand Sanitizer (Scented),
+  type: product,
+  volume: 1,
+  marginal_costs: [20],
+  breakpoints: [],
+  demand: 10,
+  interactions: [
+  {
+    name: Hand Sanitizer (Unscented),
+    val: -1
+    }],
+  penalty: 50
+}
+x08: {
+  name: Hand Sanitizer (Unscented),
+  type: product,
+  volume: 1,
+  marginal_costs: [20],
+  breakpoints: [],
+  demand: 5.7,
+  interactions: [],
+  penalty: 50
+}
+x09: {
+  name: Face Shield,
+  type: product,
+  volume: 2,
+  marginal_costs: [30],
+  breakpoints: [],
+  demand: 7,
+  interactions: [],
+  penalty: 0
+}
+x10: {
+  name: Ear Saver,
+  type: product,
+  volume: 1,
+  marginal_costs: [5],
+  breakpoints: [],
+  demand: 0.3,
+  interactions: [],
+  penalty: 0
+}
+x11: {
+  name: Lysol Wipes,
+  type: product,
+  volume: 2,
+  marginal_costs: [9],
+  breakpoints: [],
+  demand: 10.6,
+  interactions: [],
+  penalty: 0
+}
+x12: {
+  name: Rubbing Alcohol (250 mL),
+  type: product,
+  volume: 2,
+  marginal_costs: [7],
+  breakpoints: [],
+  demand: 0.5,
+  interactions: [],
+  penalty: 0
+}
+x13: {
+  name: Door Opener Keychain,
+  type: product,
+  volume: 1,
+  marginal_costs: [15],
+  breakpoints: [],
+  demand: 5,
+  interactions: [],
+  penalty: 0
+}
+x14: {
+  name: Anti-Fog Wipes,
+  type: product,
+  volume: 1,
+  marginal_costs: [8],
+  breakpoints: [],
+  demand: 20,
+  interactions: [],
+  penalty: 0
+}
