@@ -13,13 +13,6 @@ DECISION_VARS = {
         'sos_group': None,      # Which piecewise function is the sos2 set for?
         'vtype': GRB.INTEGER    # Gurobi variable type
     },
-    'y_p':
-    {
-        'name': 'y+',
-        'sos2': False,
-        'sos_group': None,
-        'vtype': GRB.CONTINUOUS
-    },
     'y_m':
     {
         'name': 'y-',
@@ -204,7 +197,6 @@ def main():
         # Demand
         for item in products:
             x = DECISION_VARS['x']['name'] + item['id']
-            y_p = DECISION_VARS['y_p']['name'] + item['id']
             y_m = DECISION_VARS['y_m']['name'] + item['id']
             m.addQConstr(var_dict[x] - get_demand(item) + var_dict[y_m] == 0,
                          f"demand - {item['name']}")
