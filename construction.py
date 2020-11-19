@@ -2,70 +2,87 @@ import numpy as np
 
 import data_import
 
+TOL = 1e-8
 
-def construction_heurestic_function(alpha: float, n: int, m: int,
-                                    V_machines: np.ndarray, c: np.ndarray,
-                                    v_products: np.ndarray, f: list, p: list,
-                                    mu: np.ndarray, sigma: np.ndarray,
+
+def construction_heurestic_function(alpha: float, V_machines: np.ndarray,
+                                    c: np.ndarray, v_products: np.ndarray,
+                                    f: list, p: list, mu: np.ndarray,
                                     m_penalty: np.ndarray):
-    k = np.zeros_like(V_machines)
+    # Get number of machines and number of products
+    n = len(V_machines)
+    m = len(v_products)
+    # Create vectors for decision variables
+    k = np.zeros((n, 1))
+    x = np.zeros((m, 1))
+    ym = np.copy(mu)
+    # Choose first machine in list
     k[0] = 1
     V_current = V_machines[0]
-    x = np.zeros((m, 1))
-    d = np.zeros((m, 1))
-    ym = np.zeros((m, 1))
     for i in range(m):
+        # Get max number of product that can be stocked
         v_i = v_products[i]
-        x_capacity = np.floor(min(V_current/v_i, mu[i]))
-        for j in range(i):
-            if sigma[i, j] < 0:
-                x_capacity = 0
-        x[i] = x_capacity
+        x[i] = np.floor(min(V_current/v_i, mu[i]))
+        # Update slack variable and remaining kiosk volume
+        ym[i] = mu[i] - x[i]
         V_current -= x[i] * v_i
-    for i in range(m):
-        sigma_i = sigma[i].reshape((-1, 1))
-        d[i] = mu[i] + x[i] * (x.T @ sigma_i)
-        ym[i] = d[i] - x[i]
+        if V_current <= TOL:
+            # No more room available
+            break
     z_x = calculate_SOS2_variables(f, x)
-    z_d = calculate_SOS2_variables(f, d)
-    Z = calculate_objective_function(m, p, z_x, z_d, alpha,
+    z_d = calculate_SOS2_variables(f, mu)
+    Z = calculate_objective_function(p, z_x, z_d, alpha,
                                      c, k, ym, m_penalty)
     return(Z, k, x)
 
 
 def calculate_SOS2_variables(f: list, x: np.ndarray):
-    z = []
-    for i, x_i in enumerate(x):
-        z_i = np.zeros_like(f[i])
-        for k, f_k in enumerate(f[i]):
-            if k == 0:
-                pass
-            elif f_prev <= x_i <= f_k:
-                z_i[k - 1] = (x_i - f_prev) / (f_k - f_prev)
-                z_i[k] = 1 - z_i[k - 1]
-            f_prev = f_k
-        z.append(z_i)
+    # Get number of variables to convert
+    n = len(x)
+    # Create empty list
+    z = [None]*n
+    # Iterate through variables
+    for i in range(n):
+        # Get number of breakpoints for variable
+        kappa = len(f[i])
+        z[i] = np.zeros((kappa, 1))
+        if x[i] <= TOL:
+            # First breakpoint is always 0 as per input requirements
+            z[i][0] = 1
+        else:
+            for k in range(1, kappa):
+                if f[i][k-1] <= x[i] <= f[i][k]:
+                    # Find which 2 breakpoints x is in between
+                    z[i][k] = (x[i] - f[i][k-1]) / (f[i][k] - f[i][k-1])
+                    z[i][k-1] = 1 - z[i][k]
     return(z)
 
 
-def calculate_objective_function(m: int, p: list, z_x: list, z_d: list,
-                                 alpha: float, c: np.ndarray, k: np.ndarray,
-                                 ym: np.ndarray, m_penalty: np.ndarray):
+def calculate_objective_function(p: list, z_x: list, z_d: list, alpha: float,
+                                 c: np.ndarray, k: np.ndarray, ym: np.ndarray,
+                                 m_penalty: np.ndarray):
     profit_potential = 0
     profit_met = 0
+    # Get number of products
+    m = len(m_penalty)
     for i in range(m):
+        # Calculate profit from each product
         z_d_i = z_d[i].reshape((-1, 1))
         z_x_i = z_x[i].reshape((-1, 1))
         p_i = p[i].reshape((-1, 1))
+        # NOTE: @ is numpy shorthand for matrix multiplication
         profit_potential += z_d_i.T @ p_i
         profit_met += z_x_i.T @ p_i
+    # Get cost of machine chosen
     machine_cost = (c.reshape((-1, 1)).T @ k.reshape((-1, 1))) / alpha
+    # Get penalties for short stocking products
     short_penalty = m_penalty.reshape((-1, 1)).T @ ym.reshape((-1, 1))
     return(profit_potential-profit_met + machine_cost + short_penalty)
 
 
 if __name__ == "__main__":
     alpha = 10
+    # Import products and machines
     products, sigma = data_import.import_products()
     machines = data_import.import_machines()
 
@@ -79,6 +96,7 @@ if __name__ == "__main__":
     f = []
     p = []
 
+    # Place parameter values into arrays
     for i, item in enumerate(machines):
         V_machines[i] = item['volume']
         c[i] = item['cost']
@@ -96,7 +114,7 @@ if __name__ == "__main__":
             p_i.append(p_i[-1] + cost * (f_i[j + 1] - f_i[j]))
         p.append(np.asarray(p_i))
 
-    Z, k, x = construction_heurestic_function(alpha, n, m, V_machines, c,
-                                              v_products, f, p, mu, sigma,
-                                              m_penalty)
-    print(Z, k, x)
+    # Run construction heurestic and print results
+    Z, k, x = construction_heurestic_function(alpha, V_machines, c, v_products,
+                                              f, p, mu, m_penalty)
+    print(f"Objective Value: {Z}\nMachines:\n{k}\nProducts:\n{x}")
