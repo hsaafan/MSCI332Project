@@ -13,12 +13,12 @@ def construction_heurestic_function(alpha: float, V_machines: np.ndarray,
     n = len(V_machines)
     m = len(v_products)
     # Create vectors for decision variables
-    k = np.zeros((n, 1))
-    x = np.zeros((m, 1))
+    k = np.zeros((n, 1), dtype=int)
+    x = np.zeros((m, 1), dtype=int)
     ym = np.copy(mu)
     # Choose first machine in list
     k[0] = 1
-    V_current = V_machines[0]
+    V_current = np.copy(V_machines)[0]
     for i in range(m):
         # Get max number of product that can be stocked
         v_i = v_products[i]
